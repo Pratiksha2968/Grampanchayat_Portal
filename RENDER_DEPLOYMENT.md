@@ -1,121 +1,102 @@
-# Render Deployment Guide
+# Deploy on Render - Step by Step Guide
 
 ## Prerequisites
 - GitHub account
-- Render account (https://render.com)
+- Render account (free at https://render.com)
 
-## Step 1: Push Code to GitHub
-Make sure your code is pushed to GitHub:
-```bash
-git add .
-git commit -m "Update for Render deployment"
-git push
-```
+## Step 1: Create Render Account
 
-## Step 2: Create MySQL Database on Render
+1. Go to https://render.com
+2. Click "Get Started for Free"
+3. Sign up using your GitHub account (recommended)
+4. Authorize Render to access your GitHub repositories
 
-1. Go to https://dashboard.render.com
-2. Click "New" → "PostgreSQL" (or MySQL if available)
-3. Note: Render free tier only offers PostgreSQL, not MySQL
+## Step 2: Create MySQL Database
 
-### Option A: Use PostgreSQL (Recommended for Render)
+1. In Render Dashboard, click **"New +"**
+2. Select **"PostgreSQL"** (Note: Free MySQL not available, use external or upgrade)
+   
+   **Alternative: Use Free External MySQL**
+   
+   Go to https://planetscale.com or https://freemysqlhosting.net:
+   - Create free MySQL database
+   - Note down:
+     - Host
+     - Database name
+     - Username
+     - Password
+     - Port (usually 3306)
 
-Update `pom.xml` to add PostgreSQL driver:
-```xml
-<dependency>
-    <groupId>org.postgresql</groupId>
-    <artifactId>postgresql</artifactId>
-    <scope>runtime</scope>
-</dependency>
-```
+## Step 3: Deploy Web Service
 
-Update `application.properties`:
-```properties
-spring.datasource.url=${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/gram_panchayat_db}
-spring.datasource.driver-class-name=org.postgresql.Driver
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
-```
+1. In Render Dashboard, click **"New +"**
+2. Select **"Web Service"**
+3. Connect your GitHub repository:
+   - Click "Connect GitHub"
+   - Select `Pratiksha2968/Grampanchayat_Portal`
+4. Configure the service:
 
-### Option B: Use External MySQL Database
-
-Use a free MySQL database from:
-- Railway (https://railway.app)
-- PlanetScale (https://planetscale.com)
-- Neon (https://neon.tech) - PostgreSQL
-
-## Step 3: Create Web Service on Render
-
-1. Go to https://dashboard.render.com
-2. Click "New" → "Web Service"
-3. Connect your GitHub repository
-4. Configure:
-   - **Name**: gram-panchayat
-   - **Environment**: Docker
-   - **Region**: Choose closest to you
-   - **Branch**: main
-   - **Plan**: Free
+   | Setting | Value |
+   |---------|-------|
+   | Name | `gram-panchayat-portal` |
+   | Region | Choose closest to you |
+   | Branch | `main` |
+   | Runtime | `Docker` |
+   | Instance Type | `Free` |
 
 5. Add Environment Variables:
-   - `SPRING_DATASOURCE_URL` - Your database connection string
-   - `SPRING_DATASOURCE_USERNAME` - Database username
-   - `SPRING_DATASOURCE_PASSWORD` - Database password
-   - `JWT_SECRET` - Any random string for JWT signing
-   - `PORT` - 8080
 
-6. Click "Create Web Service"
+   Click "Advanced" → "Add Environment Variable"
+
+   | Key | Value |
+   |-----|-------|
+   | `SPRING_DATASOURCE_URL` | `jdbc:mysql://YOUR_HOST:3306/gram_panchayat_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC` |
+   | `SPRING_DATASOURCE_USERNAME` | Your database username |
+   | `SPRING_DATASOURCE_PASSWORD` | Your database password |
+   | `JWT_SECRET` | `YourSecretKeyForJWT123456` |
+   | `PORT` | `8080` |
+
+6. Click **"Create Web Service"**
 
 ## Step 4: Wait for Deployment
 
-Render will:
-1. Pull your code from GitHub
-2. Build the Docker image
-3. Deploy the application
-
-This may take 5-10 minutes.
+- Render will build your Docker image
+- This takes 5-10 minutes
+- Watch the logs for any errors
 
 ## Step 5: Access Your Application
 
 Once deployed, your app will be available at:
 ```
-https://your-app-name.onrender.com/gram-panchayat
+https://gram-panchayat-portal.onrender.com/gram-panchayat
 ```
 
 ## Troubleshooting
 
-### Port Binding Error
-Make sure your app binds to the PORT environment variable:
-```properties
-server.port=${PORT:8080}
-```
+### Build Fails
+- Check the build logs
+- Ensure Dockerfile is correct
+- Verify all dependencies in pom.xml
 
 ### Database Connection Error
 - Verify database credentials
-- Check if database allows external connections
-- Ensure SSL is configured if required
+- Check if database host is accessible from Render
+- Ensure SSL settings are correct
 
-### Build Timeout
-- Increase build timeout in Render settings
-- Optimize Dockerfile for faster builds
-
-### Memory Issues
-- Upgrade to a paid plan for more memory
-- Optimize JVM settings:
-```dockerfile
-CMD ["java", "-Xmx512m", "-jar", "app.war"]
-```
+### Application Error
+- Check application logs in Render dashboard
+- Verify environment variables are set correctly
 
 ## Free Tier Limitations
 
-Render Free Tier:
-- 750 hours/month
+- 750 hours/month free
+- Service spins down after 15 minutes of inactivity
+- First request after spin-down takes ~30 seconds
 - 512MB RAM
-- Services spin down after inactivity
-- Limited database options
+- Shared CPU
 
-## Alternative Platforms
+## Need Help?
 
-If Render doesn't work, try:
-- **Railway** (https://railway.app) - Easier database setup
-- **Fly.io** (https://fly.io) - Good for Java apps
-- **Heroku** (https://heroku.com) - Classic choice
-- **Koyeb** (https://www.koyeb.com) - Simple deployment
+- Render Documentation: https://render.com/docs
+- Check logs in Render Dashboard
+- GitHub Issues: https://github.com/Pratiksha2968/Grampanchayat_Portal/issues
