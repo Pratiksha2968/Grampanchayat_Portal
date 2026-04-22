@@ -1,0 +1,36 @@
+services:
+  # Web Service - Spring Boot Application
+  - type: web
+    name: gram-panchayat-portal
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: gram-panchayat-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: gram-panchayat-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: gram-panchayat-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JAVA_VERSION
+        value: 25
+
+  # MySQL Database
+  - type: pserv
+    name: gram-panchayat-db
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile.mysql
+    envVars:
+      - key: MYSQL_ROOT_PASSWORD
+        generateValue: true
+      - key: MYSQL_DATABASE
+        value: gram_panchayat_db
